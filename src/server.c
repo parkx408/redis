@@ -34,6 +34,8 @@
 #include "latency.h"
 #include "atomicvar.h"
 
+#include "cp_filter.h"
+
 #include <time.h>
 #include <signal.h>
 #include <sys/wait.h>
@@ -2269,7 +2271,8 @@ void call(client *c, int flags) {
      * not generated from reading an AOF. */
     if (listLength(server.monitors) &&
         !server.loading &&
-        !(c->cmd->flags & (CMD_SKIP_MONITOR|CMD_ADMIN)))
+        !(c->cmd->flags & (CMD_SKIP_MONITOR|CMD_ADMIN)) &&
+        cpFilterRedisCmd(c->cmd, c->argv, c->argc))
     {
         replicationFeedMonitors(c,server.monitors,c->db->id,c->argv,c->argc);
     }
